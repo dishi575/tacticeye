@@ -96,7 +96,7 @@ while True:
             tid = next_id
             next_id += 1
         tracks[tid] = {"c": tuple(centers[di]), "lost": 0}
-        wr.writerow([fi, tid, "person", 1.0, *[round(v, 1) for v in d],
+        wr.writerow([fi, tid, 0, 1.0, *[round(v, 1) for v in d],
                      round(centers[di][0], 1), round(centers[di][1], 1)])
         rows_total += 1
 
