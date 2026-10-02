@@ -8,6 +8,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--points", default="homography_points.json")
 ap.add_argument("--tracks", required=True, help="tracks.csv from track.py")
 ap.add_argument("--out", default="tracks_pitch.csv")
+ap.add_argument("--anchor", choices=["feet", "center"], default="feet",
+                help="feet = bottom-centre of box (side-view cameras); center = box centre (top-view cameras)")
 args = ap.parse_args()
 
 with open(args.points) as f:
@@ -24,7 +26,7 @@ df = pd.read_csv(args.tracks)
 
 # use bottom-center of the box (feet position) not the box center, more accurate for pitch position
 feet_x = (df["x1"] + df["x2"]) / 2
-feet_y = df["y2"]
+feet_y = df["y2"] if args.anchor == "feet" else (df["y1"] + df["y2"]) / 2
 
 pts = np.stack([feet_x.values, feet_y.values], axis=1).astype(np.float32).reshape(-1, 1, 2)
 world_pts = cv2.perspectiveTransform(pts, H).reshape(-1, 2)
