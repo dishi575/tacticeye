@@ -1,1 +1,9 @@
 venv/
+
+# top-view pipeline artefacts
+*.mp4
+*.npy
+*.avi
+debug_*.jpg
+bg_*.jpg
+check.jpg
