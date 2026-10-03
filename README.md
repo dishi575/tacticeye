@@ -9,35 +9,37 @@ Football match video in, tactical analytics out. TacticEye detects and tracks ev
 ```mermaid
 flowchart TD
 
-    A["Match Video"] --> B["YOLO<br/>Player Detection"]
+    A["Match Video"] --> B["YOLOv8<br/>Player Detection"]
     B --> C["ByteTrack<br/>Multi-Object Tracking"]
-    C --> D["Player Tracks<br/>ID + Bounding Box"]
+    C --> D["Player Tracks<br/>Track ID + Bounding Box"]
 
     D --> E["Pixel Coordinates<br/>(u, v)"]
+
     E --> F["Homography<br/>Perspective Transformation"]
     F --> G["Pitch Coordinates<br/>(X, Y) in meters"]
 
     D --> H["Player Crop"]
-    H --> I["Jersey Colour<br/>Analysis"]
+
+    H --> I["Jersey Colour<br/>Features"]
     H --> J["SigLIP<br/>Visual Embeddings"]
 
     I --> K["Team Classification"]
     J --> K
-    K --> L["Team Split<br/>Team A / Team B"]
+    K --> L["Team Assignment"]
 
-    G --> M["Player-Level Data"]
+    G --> M["Player-Level Dataset"]
     L --> M
     D --> M
 
-    M --> N["Football Analytics Engine"]
+    M --> N["Analytics Engine"]
 
     N --> O["Player Statistics"]
     N --> P["Heatmaps"]
     N --> Q["Average Positions"]
-    N --> R["Team Shape / Formation"]
+    N --> R["Team Shape"]
     N --> S["Movement & Distance"]
 
-    O --> T["FastAPI Backend"]
+    O --> T["FastAPI"]
     P --> T
     Q --> T
     R --> T
@@ -45,21 +47,21 @@ flowchart TD
 
     T --> U["Next.js Dashboard"]
 
-    U --> V["Player Tracking"]
-    U --> W["Player Positions"]
-    U --> X["Team Positions"]
-    U --> Y["Heatmaps"]
-    U --> Z["Statistics"]
-    U --> AA["Tactical View"]
+    U --> V["Tactical Map"]
+    U --> W["Player Statistics"]
+    U --> X["Heatmaps"]
+    U --> Y["Average Positions"]
+    U --> Z["Match Report"]
 
     %% Styling
-    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
-    classDef vision fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-    classDef geometry fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef team fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
-    classDef analytics fill:#e0f7fa,stroke:#00838f,stroke-width:2px;
-    classDef backend fill:#fff8e1,stroke:#f9a825,stroke-width:2px;
-    classDef frontend fill:#ede7f6,stroke:#512da8,stroke-width:2px;
+
+    classDef input fill:#E8F1FF,stroke:#2563EB,color:#172554,stroke-width:2px;
+    classDef vision fill:#F1E8FF,stroke:#7C3AED,color:#3B0764,stroke-width:2px;
+    classDef geometry fill:#E8F8EF,stroke:#16A34A,color:#14532D,stroke-width:2px;
+    classDef team fill:#FFF3E0,stroke:#EA580C,color:#7C2D12,stroke-width:2px;
+    classDef analytics fill:#E6F7F7,stroke:#0F766E,color:#134E4A,stroke-width:2px;
+    classDef backend fill:#FFF7D6,stroke:#CA8A04,color:#713F12,stroke-width:2px;
+    classDef frontend fill:#EEF2FF,stroke:#4F46E5,color:#312E81,stroke-width:2px;
 
     class A input;
     class B,C,D,H vision;
@@ -67,24 +69,9 @@ flowchart TD
     class I,J,K,L team;
     class M,N,O,P,Q,R,S analytics;
     class T backend;
-    class U,V,W,X,Y,Z,AA frontend;
-```
-```
+    class U,V,W,X,Y,Z frontend;
 
-## What is in this repo
 
-| Path | What it does |
-|---|---|
-| `track.py`, `src/track.py` | YOLOv8 + ByteTrack on a video, writes `tracks.csv` (frame, track_id, class, conf, bbox, centre) |
-| `homography_points.json`, `homography_matrix.npy`, `src/calibrate.py`, `src/apply_homography.py` | Pixel to pitch-metre mapping; produces `tracks_pitch.csv` |
-| `cluster_teams.py`, `siglip_embeddings_colab.ipynb`, `generate_synthetic_crops.py` | Team split from SigLIP embeddings of player crops (numpy k-means, no scikit-learn needed) |
-| `generate_synthetic_tracks.py` | Synthetic `tracks.parquet` for building the backend/frontend without the CV pipeline |
-| `src/analytics.py`, `src/roles.py`, `src/tactical_map.py`, `src/report.py`, `docs/` | Analytics, role guess, tactical map, heatmaps and the HTML match report |
-| `backend/` | **FastAPI** read-only API over the pipeline outputs, with tests, Dockerfile and demo data |
-| `frontend/` | **Next.js** dashboard that talks to the API |
-| `PROJECT_README.md` | Two-terminal quick start |
-
-## Quick start (dashboard on the demo clip)
 
 Requirements: Python 3.10+, Node 18.18+.
 
