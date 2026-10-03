@@ -1,0 +1,21 @@
+{
+  "fps": 24.974037826100638,
+  "team_names": {
+    "0": "red",
+    "1": "green"
+  },
+  "red": {
+    "team_id": 0,
+    "players_tracked": 9,
+    "total_distance_m": 42.9,
+    "avg_x": 24.93,
+    "avg_y": 16.35
+  },
+  "green": {
+    "team_id": 1,
+    "players_tracked": 3,
+    "total_distance_m": 10.8,
+    "avg_x": 21.67,
+    "avg_y": 3.33
+  }
+}
