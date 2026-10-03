@@ -2,8 +2,6 @@
 
 Football match video in, tactical analytics out. TacticEye detects and tracks every player in a broadcast-style clip, maps them onto the pitch, splits them into teams, and serves the result through an API to a web dashboard (tactical map replay, player stats, heatmaps, match report).
 
-
-
 ## System Architecture
 
 ```mermaid
@@ -70,82 +68,146 @@ flowchart TD
     class M,N,O,P,Q,R,S analytics;
     class T backend;
     class U,V,W,X,Y,Z frontend;
+```
 
+## Requirements
 
+- Python 3.10+
+- Node.js 18.18+
 
-## Requirements: Python 3.10+, Node 18.18+.
+## Quick Start
+
+### Backend
 
 ```bash
-# Terminal 1 - API  (http://127.0.0.1:8000/docs)
 cd backend
 python -m venv venv
-venv\Scripts\activate            # macOS/Linux: source venv/bin/activate
+venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
+```
 
-# Terminal 2 - dashboard  (http://localhost:3000)
+API: `http://127.0.0.1:8000/docs`
+
+### Frontend
+
+Open a second terminal:
+
+```bash
 cd frontend
-cp .env.local.example .env.local  # Windows: copy .env.local.example .env.local
+cp .env.local.example .env.local
+# Windows:
+# copy .env.local.example .env.local
+
 npm install
 npm run dev
 ```
 
-Open <http://localhost:3000>. Press **Play** on the tactical map to replay the clip.
+Open `http://localhost:3000`.
 
-The API serves the files in `backend/data/demo/`. Point it at another match with `MATCH_DIR=/path/to/output` (and `FPS=25` if the clip is not 30 fps; by default fps is read from `team_stats.json`).
+Press **Play** on the tactical map to replay the clip.
+
+The API serves the files in `backend/data/demo/`. Point it at another match with `MATCH_DIR=/path/to/output`.
+
+If required, set `FPS=25`. By default, FPS is read from `team_stats.json`.
 
 ## Dashboard
 
 - **Stats cards:** clip length, frames, tracks, distance per team.
 - **Tactical map:** bird's-eye replay of player positions with play/pause, scrubber, speed, team filter and trails.
 - **Players table:** distance, average speed and time seen per track.
-- **Heatmaps and average positions** per team.
-- **Match report** (HTML) embedded in the page.
+- **Heatmaps:** player distribution for each team.
+- **Average positions:** team-level positioning analysis.
+- **Match report:** HTML match report embedded in the dashboard.
 
 ## API
 
-Pitch coordinates are metres, origin top-left (x = length, y = width). Interactive docs at `/docs`.
+Pitch coordinates are measured in metres with the origin at the top-left (`x = length`, `y = width`).
+
+Interactive API documentation is available at `/docs`.
 
 | Endpoint | Returns |
 |---|---|
-| `GET /health` | status |
-| `GET /api/summary` | fps, frame range, clip length, track count, team names, coordinate bounds, per-team stats |
-| `GET /api/frames/{n}` | all players in frame `n` (track_id, team, role, x, y) |
-| `GET /api/tracks?start&end&team` | rows for a frame range (max 300 frames) |
-| `GET /api/players` | per-track distance and average speed |
+| `GET /health` | API status |
+| `GET /api/summary` | FPS, frame range, clip length, track count, team names, coordinate bounds and team statistics |
+| `GET /api/frames/{n}` | All players in frame `n` |
+| `GET /api/tracks?start&end&team` | Track data for a frame range |
+| `GET /api/players` | Per-track distance and average speed |
 | `GET /api/heatmap/{team}` | PNG heatmap |
-| `GET /api/avg-positions` | PNG average positions |
+| `GET /api/avg-positions` | PNG average-position visualization |
 | `GET /api/report` | HTML match report |
 
-Tests: `cd backend && pip install -r requirements-dev.txt && python -m pytest`.
-Docker: `cd backend && docker build -t tacticeye-api . && docker run -p 8000:8000 tacticeye-api`.
-
-## Running the CV pipeline on your own clip
+### Testing
 
 ```bash
-pip install -r requirements.txt                       # ultralytics, opencv, numpy, pandas, ...
-python track.py --video sample2.mp4 --model yolov8m.pt --imgsz 1280 --conf 0.15 --out output4
-# convert pixels to pitch metres (see src/apply_homography.py) -> tracks_pitch.csv
 cd backend
-python tools/make_demo_data.py --tracks ../tracks_pitch.csv --video ../sample2.mp4 --out data/demo
+pip install -r requirements-dev.txt
+python -m pytest
 ```
 
-`tools/make_demo_data.py` splits teams by median shirt colour (k-means, k=2), drops very dark kits (referee/keeper) from the team split, and writes `tracks_roles.csv`, `team_stats.json`, heatmaps, average positions and the report into `data/demo/`.
+### Docker
 
-Tips: `yolov8n.pt` is the fastest but misses many players in a wide shot; `yolov8m.pt` at `--imgsz 1280` detects far more (about 22 people plus the ball in a test frame) at roughly 2 s/frame on a 2-core CPU. Use `--every_n 6` for a quick trial run.
+```bash
+cd backend
+docker build -t tacticeye-api .
+docker run -p 8000:8000 tacticeye-api
+```
 
-## Known limitations
+## Running the CV Pipeline on Your Own Clip
 
-- **Calibration covers only part of the pitch.** The homography is fitted from four points in one penalty box, so it extrapolates poorly to the rest of the frame (e.g. the centre circle maps to ~28 m instead of ~52 m). Recalibrate with 6+ spread-out landmarks (centre circle, halfway line, both penalty boxes) for full-pitch accuracy. Until then the map shows only the calibrated region and absolute distances are approximate.
-- **Detection density depends on the model.** With `yolov8n` the demo data has only 1-5 players per frame; use a larger model for realistic numbers.
-- **Roles** are a single value (`player`) in the demo data; role detection is not wired into the API yet.
-- **Ball, passing lanes and xT** are not implemented yet.
-- The API is read-only: there is no video upload endpoint yet.
+Install the CV dependencies:
 
-## Roadmap
+```bash
+pip install -r requirements.txt
+```
 
-- [ ] Re-run tracking with a larger YOLO model and regenerate the demo data
-- [ ] Recalibrate the homography with spread-out pitch landmarks
-- [ ] `POST /api/pipeline/run`: upload a video and run the pipeline as a background job
-- [ ] Ball tracking, passing lanes, expected threat (xT)
-- [ ] Wire role detection (`src/roles.py`) into the API
+Run player detection and tracking:
+
+```bash
+python track.py \
+    --video sample2.mp4 \
+    --model yolov8m.pt \
+    --imgsz 1280 \
+    --conf 0.15 \
+    --out output4
+```
+
+Convert pixel coordinates to pitch coordinates using the homography pipeline:
+
+```text
+src/apply_homography.py
+→ tracks_pitch.csv
+```
+
+Generate the dashboard demo data:
+
+```bash
+cd backend
+python tools/make_demo_data.py \
+    --tracks ../tracks_pitch.csv \
+    --video ../sample2.mp4 \
+    --out data/demo
+```
+
+`tools/make_demo_data.py` splits teams using median shirt colour with K-means (`k=2`), filters very dark kits such as referee/keeper detections, and generates:
+
+- `tracks_roles.csv`
+- `team_stats.json`
+- Heatmaps
+- Average-position visualizations
+- Match report
+
+### Performance Tips
+
+- `yolov8n.pt` is the fastest option but may miss players in wide broadcast shots.
+- `yolov8m.pt` with `--imgsz 1280` provides substantially better player detection.
+- Use `--every_n 6` for a quick trial run when testing the pipeline.
+
+## Known Limitations
+
+- **Partial pitch calibration:** The current homography is fitted using four points in one penalty-box region, so extrapolation to the rest of the pitch is inaccurate. Full-pitch calibration requires additional spread-out landmarks such as the centre circle, halfway line and both penalty boxes.
+- **Detection density depends on the model:** Smaller models such as `yolov8n` may produce sparse player detections. Larger models provide better coverage at the cost of inference speed.
+- **Roles:** The current demo assigns a generic `player` role. Role detection is not yet integrated into the API.
+- **Ball tracking:** Ball tracking, passing lanes and expected threat (`xT`) are not implemented yet.
+- **API:** The current API is read-only and does not yet provide a video-upload endpoint.
+
