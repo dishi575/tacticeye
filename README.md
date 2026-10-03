@@ -73,7 +73,7 @@ flowchart TD
 
 
 
-Requirements: Python 3.10+, Node 18.18+.
+#Requirements: Python 3.10+, Node 18.18+.
 
 ```bash
 # Terminal 1 - API  (http://127.0.0.1:8000/docs)
