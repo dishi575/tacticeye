@@ -2,6 +2,14 @@
 
 Football match video in, tactical analytics out. TacticEye detects and tracks every player in a broadcast-style clip, maps them onto the pitch, splits them into teams, and serves the result through an API to a web dashboard (tactical map replay, player stats, heatmaps, match report).
 
+
+
+```
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    ...
 ```
  video ──► YOLO + ByteTrack ──► pixel tracks ──► homography ──► pitch coordinates (m)
                                      │                                   │
