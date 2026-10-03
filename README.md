@@ -4,12 +4,12 @@ Football match video in, tactical analytics out. TacticEye detects and tracks ev
 
 
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
 
-    A["🎥 Match Video"] --> B["YOLO<br/>Player Detection"]
+    A["Match Video"] --> B["YOLO<br/>Player Detection"]
     B --> C["ByteTrack<br/>Multi-Object Tracking"]
     C --> D["Player Tracks<br/>ID + Bounding Box"]
 
@@ -29,13 +29,13 @@ flowchart TD
     L --> M
     D --> M
 
-    M --> N["⚽ Football Analytics Engine"]
+    M --> N["Football Analytics Engine"]
 
-    N --> O["📊 Player Statistics"]
-    N --> P["🔥 Heatmaps"]
-    N --> Q["📍 Average Positions"]
-    N --> R["⚽ Team Shape / Formation"]
-    N --> S["🏃 Movement & Distance"]
+    N --> O["Player Statistics"]
+    N --> P["Heatmaps"]
+    N --> Q["Average Positions"]
+    N --> R["Team Shape / Formation"]
+    N --> S["Movement & Distance"]
 
     O --> T["FastAPI Backend"]
     P --> T
@@ -45,12 +45,12 @@ flowchart TD
 
     T --> U["Next.js Dashboard"]
 
-    U --> V["🎯 Player Tracking"]
-    U --> W["📍 Player Positions"]
-    U --> X["👥 Team Positions"]
-    U --> Y["🔥 Heatmaps"]
-    U --> Z["📊 Statistics"]
-    U --> AA["🧠 Tactical View"]
+    U --> V["Player Tracking"]
+    U --> W["Player Positions"]
+    U --> X["Team Positions"]
+    U --> Y["Heatmaps"]
+    U --> Z["Statistics"]
+    U --> AA["Tactical View"]
 
     %% Styling
     classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
